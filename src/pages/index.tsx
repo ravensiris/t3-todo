@@ -6,15 +6,19 @@ import {ListBox} from "~/components/list_box"
 import {SearchField} from "~/components/search_field"
 import {Item, Section} from 'react-stately';
 import { v4 as uuidv4 } from 'uuid'
+import Fuse from 'fuse.js'
 
-const TodoList = ({selected, items, onSelectionChange}) => {
+const TodoList = ({selected, items, onSelectionChange, query}) => {
+  const fuse = new Fuse(items, {keys: ['title']})
+  const filteredItems = !!query ? fuse.search(query).map(item => item.item) : items
+
   return (
     <ListBox
       selectionMode="multiple"
       selectedKeys={selected}
       onSelectionChange={onSelectionChange}
     >
-      {items.map(item =>
+      {filteredItems.map(item =>
         <Item key={item.id}>{item.done && (<span className="pr-3 text-green-500">D</span>)}{item.title}</Item>
       )}
     </ListBox>
@@ -69,7 +73,7 @@ const Home: NextPage = () => {
           </h1>
           <div className="w-full space-y-6">
             <SearchField placeholder="Search..." onChange={setQuery} onSubmit={addTodo} />
-            <TodoList items={items} selected={selected} onSelectionChange={setSelected}/>
+            <TodoList items={items} selected={selected} onSelectionChange={setSelected} query={query}/>
             <TodoAction selected={selected} items={items} setItems={setItems} setSelected={setSelected} />
           </div>
         </div>
